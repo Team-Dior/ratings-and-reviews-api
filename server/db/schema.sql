@@ -29,7 +29,7 @@ CREATE TABLE photos (
   review_id INT,
   url VARCHAR(500),
   FOREIGN KEY (review_id) REFERENCES reviews(id)
-)
+);
 
 COPY photos
 FROM '/Users/kyle/Desktop/sdcdata/reviews_photos.csv'
@@ -40,7 +40,7 @@ CREATE TABLE characteristics (
   id SERIAL PRIMARY KEY,
   product_id INT,
   name VARCHAR(50)
-)
+);
 
 COPY characteristics
 FROM '/Users/kyle/Desktop/sdcdata/characteristics.csv'
@@ -54,7 +54,7 @@ CREATE TABLE reviewcharacteristics (
   value INT,
   FOREIGN KEY (characteristic_id) REFERENCES characteristics(id),
   FOREIGN KEY (review_id) REFERENCES reviews(id)
-)
+);
 
 COPY reviewcharacteristics
 FROM '/Users/kyle/Desktop/sdcdata/characteristic_reviews.csv'
