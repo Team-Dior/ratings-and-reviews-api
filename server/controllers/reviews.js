@@ -1,9 +1,11 @@
 const models = require('../models/reviews.js');
 
 function getReviews(req, res) {
+  console.log('request is ', req);
   models.getReviews((err, result) => {
     if (err) {
       console.log('error')
+      res.status(404).send();
     } else {
       res.status(200).send(result);
     }
