@@ -1,9 +1,9 @@
 const express = require('express');
 const morgan  = require('morgan');
 const cors = require('cors');
-require('dotenv').config();
-// const path = require('path');
-// require('dotenv').config({path: path.join(__dirname, '../.env')});
+// require('dotenv').config();
+const path = require('path');
+require('dotenv').config({path: path.join(__dirname, '../.env')});
 
 const app = express();
 
@@ -16,7 +16,7 @@ const router = require('./router.js');
 
 app.use(router);
 
-const PORT = process.env.PORT ?? 3000;
+const PORT = process.env.PORT ?? 8080;
 app.listen(PORT, () => {
   console.log(`listening @ http://localhost:${PORT}`);
 });
