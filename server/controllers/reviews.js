@@ -2,7 +2,7 @@ const models = require('../models/reviews.js');
 
 function getReviews(req, res) {
   console.log('request is ', req);
-  models.getReviews((err, result) => {
+  models.getReviews(req.body, (err, result) => {
     if (err) {
       console.log('error')
       res.status(404).send();
@@ -12,18 +12,41 @@ function getReviews(req, res) {
   });
 }
 
-function getMeta(req, res) {
-  models.getMeta((err, result) => {
+// function getReviews(req, res) {
+//   console.log('request is ', req.body);
+//   models.getReviews(req.body)
+//     .then((result) => {
+//       res.status(200).send(result);
+//     })
+//     .catch((err) => {
+//       res.status(500).send(err);
+//     });
+// }
+
+async function getMeta(req, res) {
+  await models.getMeta((err, result) => {
     if (err) {
-      console.log('error')
+      console.log('error', err);
     } else {
+      console.log('result in controllers ', result);
       res.status(200).send(result);
     }
   });
 }
 
+// function getMeta(req, res) {
+//   models.getMeta()
+//     .then((result) => {
+//       res.status(200).send(result);
+//     })
+//     .catch((err) => {
+//       res.status(500).send(err);
+//     });
+// }
+
 function postReview(req, res) {
-  models.postReview((err, result) => {
+  console.log('req body is ', req.body);
+  models.postReview(req.body, (err, result) => {
     if (err) {
       console.log('error')
     } else {
