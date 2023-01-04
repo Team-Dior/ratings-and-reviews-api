@@ -1,7 +1,6 @@
 const models = require('../models/reviews.js');
 
 function getReviews(req, res) {
-  console.log('request is ', req.query);
   models.getReviews(req.query, (err, result) => {
     if (err) {
       console.log('error', err)
@@ -13,7 +12,6 @@ function getReviews(req, res) {
 }
 
 function getMeta(req, res) {
-  console.log('request is ', req.query);
   models.getMeta(req.query, (err, result) => {
     if (err) {
       console.log('error', err);
@@ -24,7 +22,6 @@ function getMeta(req, res) {
 }
 
 function postReview(req, res) {
-  console.log('req body is ', req.body);
   models.postReview(req.body, (err, result) => {
     if (err) {
       console.log('error')
@@ -35,7 +32,6 @@ function postReview(req, res) {
 }
 
 function putHelpful(req, res) {
-  console.log('request ', req.params);
   models.putHelpful(req.params, (err, result) => {
     if (err) {
       console.log('error')
@@ -46,7 +42,6 @@ function putHelpful(req, res) {
 }
 
 function putReport(req, res) {
-  console.log('request ', req.params);
   models.putReport(req.params, (err, result) => {
     if (err) {
       console.log('error')

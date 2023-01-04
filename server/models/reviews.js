@@ -1,12 +1,10 @@
 const db = require('../db/index.js');
 
 function getReviews(query, callback) {
-  console.log('query in models is ', query);
   const page = Number(query.page) || 1;
   const count = Number(query.count) || 5;
   const sort = query.sort || 'newest';
   const product_id = Number(query.product_id) || 43050;
-  console.log('types of ', typeof page, typeof count, typeof sort, typeof product_id);
   const queryStringA = `SELECT * FROM reviews WHERE product_id = ${product_id} AND reported = false LIMIT ${count} OFFSET ${page}`;
   const reviewObj = {product_id: product_id};
   reviewObj.results = [];
@@ -27,7 +25,6 @@ function getReviews(query, callback) {
         tempObj.helpfulness = review.helpfulness;
         tempObj.photos = [];
 
-        console.log('reviews ', review.id);
         queryStringB = `SELECT * FROM photos WHERE review_id = ${review.id}`;
         await db.query(queryStringB)
           .then((res) => {
@@ -49,7 +46,7 @@ function getReviews(query, callback) {
 }
 
 function getMeta (query, callback) {
-  const product_id = 797894;
+  const product_id = Number(query.product_id) || 797894;
   const queryStringA = `SELECT rating, recommended FROM reviews WHERE product_id = ${product_id}`;
   const metaObj = {product_id: product_id.toString()};
   db.query(queryStringA, (err, result) => {
@@ -76,7 +73,7 @@ function getMeta (query, callback) {
           callback(err, null);
         } else {
           metaObj.characteristics = {};
-          return Promise.all(result.rows.map( async (character) => {
+          return Promise.all(result.rows.map(async (character) => {
             await db.query(`SELECT value FROM reviewcharacteristics WHERE characteristic_id = ${character.id}`)
               .then((res) => {
                 let total = 0;
@@ -124,7 +121,6 @@ function postReview(data, callback) {
           const valueList = Object.values(data.characteristics);
 
           keyList.forEach(name => {
-            console.log('test ', data.characteristics[name]);
             const queryStringC = `INSERT INTO reviewcharacteristics (characteristic_id, review_id, value) VALUES ((SELECT id FROM characteristics WHERE product_id = ${data.product_id} AND name = '${name}'), (SELECT id FROM reviews WHERE date = ${date}), ${data.characteristics[name]})`;
             db.query(queryStringC, (err, result) => {
               if (err) {
