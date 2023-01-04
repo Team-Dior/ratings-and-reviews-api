@@ -13,8 +13,8 @@ function getReviews(req, res) {
   });
 }
 
-async function getMeta(req, res) {
-  await models.getMeta((err, result) => {
+function getMeta(req, res) {
+  models.getMeta((err, result) => {
     if (err) {
       console.log('error', err);
     } else {

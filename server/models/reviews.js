@@ -5,44 +5,77 @@ function getReviews(data, callback) {
   // const count = query.count || 5;
   // const sort = query.sort || 'newest';
   // const product_id = query.product_id || 797894;
-  const product_id = 797894;
+  const product_id = 43050;
   const queryStringA = `SELECT * FROM reviews WHERE product_id = ${product_id} LIMIT 5 OFFSET 1`;
   const reviewObj = {product_id: product_id};
   reviewObj.results = [];
-  db.query(queryStringA, (err, result) => {
+  return db.query(queryStringA, (err, result) => {
     if (err) {
       console.log('error is ', err);
       callback(err, null);
     } else {
       console.log('get result ', result.rows);
-      for (let i = 0; i < result.rows.length; i++) {
+
+      return Promise.all(result.rows.map(async (review) => {
+        console.log('review individual ', review);
         tempObj = {};
-        tempObj.review_id = result.rows[i].id;
-        tempObj.rating = result.rows[i].rating;
-        tempObj.summary = result.rows[i].summary;
-        tempObj.recommended = result.rows[i].recommended;
-        tempObj.response = result.rows[i].response;
-        tempObj.body = result.rows[i].body;
-        tempObj.date = result.rows[i].date;
-        tempObj.reviewer_name = result.rows[i].reviewer_name;
-        tempObj.helpfulness = result.rows[i].helpfulness;
-        queryStringB = `SELECT * FROM photos WHERE review_id = ${result.rows[i].id}`;
-        db.query(queryStringB, (err, result) => {
-          if (err) {
-            callback(err, null);
-          } else {
-            console.log('photos result is ', result.rows);
-            tempObj.photos = result.rows;
-            reviewObj.results.push(tempObj);
-            console.log('obj is is ', reviewObj);
-            // callback(null, reviewObj);
-          }
-        })
-      }
-      // callback(null, reviewObj);
+        tempObj.review_id = review.id;
+        tempObj.rating = review.rating;
+        tempObj.summary = review.summary;
+        tempObj.recommended = review.recommended;
+        tempObj.response = review.response;
+        tempObj.body = review.body;
+        tempObj.date = review.date;
+        tempObj.reviewer_name = review.reviewer_name;
+        tempObj.helpfulness = review.helpfulness;
+        tempObj.photos = [];
+        reviewObj.results.push(tempObj);
+
+        queryStringB = `SELECT * FROM photos WHERE review_id = ${review.id}`;
+        await db.query(queryStringB)
+          .then((res) => {
+            console.log('photos result is ', res.rows);
+            tempObj.photos = res.rows;
+          })
+      }))
+      .then((res) => {
+        callback(null, reviewObj);
+      })
+      .catch((err) => {
+        callback(err, null);
+      });
     }
   });
 }
+      // for (let i = 0; i < result.rows.length; i++) {
+      //   tempObj = {};
+      //   tempObj.review_id = r.rows[i].id;
+      //   tempObj.rating = result.rows[i].rating;
+      //   tempObj.summary = result.rows[i].summary;
+      //   tempObj.recommended = result.rows[i].recommended;
+      //   tempObj.response = result.rows[i].response;
+      //   tempObj.body = result.rows[i].body;
+      //   tempObj.date = result.rows[i].date;
+      //   tempObj.reviewer_name = result.rows[i].reviewer_name;
+      //   tempObj.helpfulness = result.rows[i].helpfulness;
+
+      //   queryStringB = `SELECT * FROM photos WHERE review_id = ${result.rows[i].id}`;
+      //   db.query(queryStringB, (err, result) => {
+      //     if (err) {
+      //       callback(err, null);
+      //     } else {
+      //       console.log('photos result is ', result.rows);
+      //       tempObj.photos = result.rows;
+      //       reviewObj.results.push(tempObj);
+      //       console.log('obj is is ', reviewObj);
+      //       // callback(null, reviewObj);
+      //     }
+      //   })
+      // }
+      // callback(null, reviewObj);
+      // callback(null, reviewObj);
+
+
 
 // function getReviews(data, callback) {
 //   // const page = query.page || 1;
@@ -132,55 +165,41 @@ const getMeta = async (callback) => {
       }
       metaObj.ratings = ratingsObj;
       metaObj.recommended = recommendedObj;
-      console.log('objects', ratingsObj, recommendedObj);
+      console.log('objects', ratingsObj, recommendedObj, metaObj);
       const characteristicsObj = {};
       const queryStringB = `SELECT id, name FROM characteristics WHERE product_id = ${product_id}`;
       db.query(queryStringB, (err, result) => {
         if (err) {
           callback(err, null);
         } else {
-          const charList = [];
-          for (let i  = 0; i < result.rows.length; i++) {
-            charList.push(result.rows[i].id);
-            names.push(result.rows[i].name);
-            characteristicsObj[result.rows[i].name] = {};
-            characteristicsObj[result.rows[i].name].id = result.rows[i].id;
-          }
-          console.log(characteristicsObj);
-          let avgArray = [];
-          for (let j = 0; j < charList.length; j++) {
-            const id = charList[j];
-            const queryStringC = `SELECT value FROM reviewcharacteristics WHERE characteristic_id = ${id}`;
-            db.query(queryStringC, (err, result) => {
-              if (err) {
-                callback(err, null);
-              } else {
+          metaObj.characteristics = {};
+          return Promise.all(result.rows.map( async (character) => {
+            await db.query(`SELECT value FROM reviewcharacteristics WHERE characteristic_id = ${character.id}`)
+              .then((res) => {
+                console.log('loop values', res.rows);
                 let total = 0;
-                let count = 0;
-                for (let k = 0; k < result.rows.length; k++) {
-                  total += result.rows[k].value;
-                  count = k;
+                for (let i = 0; i < res.rows.length; i++) {
+                  total += res.rows[i].value;
                 }
-                let avg = total / count;
-                avgArray.push(avg);
-              }
-              let i = 0;
-              console.log('avg array ', avgArray);
-              for (let key in characteristicsObj) {
-                characteristicsObj[key].value = avgArray[i];
-                i++;
-              }
-              metaObj.characteristics = characteristicsObj;
-              // console.log('char object finished ', characteristicsObj);
-              console.log('meta obj is ', metaObj);
+                console.log('total ', total);
+                console.log('character name ', character.name, character.id, total /res.rows.length);
+                metaObj.characteristics[character.name] = {
+                  id: character.id,
+                  value: total / res.rows.length,
+                };
+              });
+          }))
+            .then(res => {
+              console.log('meta obj ', metaObj);
+              callback(null, metaObj);
             })
-          }
-          // callback(null, metaObj);
+            .catch(err => {
+              callback(err, null);
+            })
         }
       });
     }
   });
-  // callback(null, metaObj);
 }
 
 function postReview(data, callback) {
