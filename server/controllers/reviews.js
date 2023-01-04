@@ -7,42 +7,21 @@ function getReviews(req, res) {
       console.log('error')
       res.status(404).send();
     } else {
-      res.status(200).send(result);
-    }
-  });
-}
-
-// function getReviews(req, res) {
-//   console.log('request is ', req.body);
-//   models.getReviews(req.body)
-//     .then((result) => {
-//       res.status(200).send(result);
-//     })
-//     .catch((err) => {
-//       res.status(500).send(err);
-//     });
-// }
-
-async function getMeta(req, res) {
-  await models.getMeta((err, result) => {
-    if (err) {
-      console.log('error', err);
-    } else {
       console.log('result in controllers ', result);
       res.status(200).send(result);
     }
   });
 }
 
-// function getMeta(req, res) {
-//   models.getMeta()
-//     .then((result) => {
-//       res.status(200).send(result);
-//     })
-//     .catch((err) => {
-//       res.status(500).send(err);
-//     });
-// }
+async function getMeta(req, res) {
+  await models.getMeta((err, result) => {
+    if (err) {
+      console.log('error', err);
+    } else {
+      res.status(200).send(result);
+    }
+  });
+}
 
 function postReview(req, res) {
   console.log('req body is ', req.body);
