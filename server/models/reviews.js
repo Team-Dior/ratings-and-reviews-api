@@ -1,21 +1,21 @@
 const db = require('../db/index.js');
 
-function getReviews(data, callback) {
-  // const page = query.page || 1;
-  // const count = query.count || 5;
-  // const sort = query.sort || 'newest';
-  // const product_id = query.product_id || 797894;
-  const product_id = 43050;
-  const queryStringA = `SELECT * FROM reviews WHERE product_id = ${product_id} LIMIT 5 OFFSET 1`;
+function getReviews(query, callback) {
+  console.log('query in models is ', query);
+  const page = Number(query.page) || 1;
+  const count = Number(query.count) || 5;
+  const sort = query.sort || 'newest';
+  const product_id = Number(query.product_id) || 43050;
+  console.log('types of ', typeof page, typeof count, typeof sort, typeof product_id);
+  const queryStringA = `SELECT * FROM reviews WHERE product_id = ${product_id} AND reported = false LIMIT ${count} OFFSET ${page}`;
   const reviewObj = {product_id: product_id};
   reviewObj.results = [];
   return db.query(queryStringA, (err, result) => {
     if (err) {
       callback(err, null);
     } else {
-
       return Promise.all(result.rows.map(async (review) => {
-        tempObj = {};
+        let tempObj = {};
         tempObj.review_id = review.id;
         tempObj.rating = review.rating;
         tempObj.summary = review.summary;
@@ -26,14 +26,17 @@ function getReviews(data, callback) {
         tempObj.reviewer_name = review.reviewer_name;
         tempObj.helpfulness = review.helpfulness;
         tempObj.photos = [];
-        reviewObj.results.push(tempObj);
 
+        console.log('reviews ', review.id);
         queryStringB = `SELECT * FROM photos WHERE review_id = ${review.id}`;
         await db.query(queryStringB)
           .then((res) => {
-            console.log('photos result is ', res.rows);
             tempObj.photos = res.rows;
+            reviewObj.results.push(tempObj);
           })
+          .catch((err) => {
+            console.log('error is ', err);
+          });
       }))
       .then((res) => {
         callback(null, reviewObj);
@@ -45,7 +48,7 @@ function getReviews(data, callback) {
   });
 }
 
-function getMeta (callback) {
+function getMeta (query, callback) {
   const product_id = 797894;
   const queryStringA = `SELECT rating, recommended FROM reviews WHERE product_id = ${product_id}`;
   const metaObj = {product_id: product_id.toString()};
