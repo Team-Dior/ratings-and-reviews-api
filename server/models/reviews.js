@@ -11,13 +11,10 @@ function getReviews(data, callback) {
   reviewObj.results = [];
   return db.query(queryStringA, (err, result) => {
     if (err) {
-      console.log('error is ', err);
       callback(err, null);
     } else {
-      console.log('get result ', result.rows);
 
       return Promise.all(result.rows.map(async (review) => {
-        console.log('review individual ', review);
         tempObj = {};
         tempObj.review_id = review.id;
         tempObj.rating = review.rating;
@@ -47,112 +44,17 @@ function getReviews(data, callback) {
     }
   });
 }
-      // for (let i = 0; i < result.rows.length; i++) {
-      //   tempObj = {};
-      //   tempObj.review_id = r.rows[i].id;
-      //   tempObj.rating = result.rows[i].rating;
-      //   tempObj.summary = result.rows[i].summary;
-      //   tempObj.recommended = result.rows[i].recommended;
-      //   tempObj.response = result.rows[i].response;
-      //   tempObj.body = result.rows[i].body;
-      //   tempObj.date = result.rows[i].date;
-      //   tempObj.reviewer_name = result.rows[i].reviewer_name;
-      //   tempObj.helpfulness = result.rows[i].helpfulness;
 
-      //   queryStringB = `SELECT * FROM photos WHERE review_id = ${result.rows[i].id}`;
-      //   db.query(queryStringB, (err, result) => {
-      //     if (err) {
-      //       callback(err, null);
-      //     } else {
-      //       console.log('photos result is ', result.rows);
-      //       tempObj.photos = result.rows;
-      //       reviewObj.results.push(tempObj);
-      //       console.log('obj is is ', reviewObj);
-      //       // callback(null, reviewObj);
-      //     }
-      //   })
-      // }
-      // callback(null, reviewObj);
-      // callback(null, reviewObj);
-
-
-
-// function getReviews(data, callback) {
-//   // const page = query.page || 1;
-//   // const count = query.count || 5;
-//   // const sort = query.sort || 'newest';
-//   // const product_id = query.product_id || 797894;
-//   const product_id = 797894;
-//   const queryStringA = `SELECT * FROM reviews WHERE product_id = ${product_id} AND reported = false LIMIT 5 OFFSET 1`;
-//   db.query(queryStringA)
-//     .then((result) => {
-//       console.log('get result ', result.rows);
-
-//         const queryStringB = `SELECT * FROM photos WHERE review_id IN (SELECT id FROM reviews WHERE product_id = ${product_id})`;
-//         db.query(queryStringB)
-//         .then(() => {
-//           console.log('photos result is ', result.rows);
-//         })
-//       })
-//       .catch((err) => {
-//         return err;
-//       });
-//     return 0;
-// }
-
-// function getMeta() {
-//   const ratingsObj = {"1": 0, "2": 0, "3": 0, "4": 0, "5": 0};
-//   const recommendedObj = {"0": 0, "1": 0};
-//   const characteristicsObj = {};
-//   const product_id = 797894;
-//   const queryStringA = `SELECT rating, recommended FROM reviews WHERE product_id = ${product_id}`;
-//   return db.query(queryStringA)
-//     .then((result) => {
-//       metaObj.product_id = product_id;
-//       console.log('meta queryA result is ', result);
-//       // const ratingsObj = {"1": 0, "2": 0, "3": 0, "4": 0, "5": 0};
-//       // const recommendedObj = {"0": 0, "1": 0};
-//       for (let i  = 0; i < result.rows.length; i++) {
-//         ratingsObj[result.rows[i].rating] += 1;
-//         if (result.rows[i].recommended === false) {
-//           recommendedObj["0"] += 1;
-//         } else {
-//           recommendedObj["1"] += 1;
-//         }
-//       }
-//       console.log('objects', ratingsObj, recommendedObj);
-//       const queryStringB = `SELECT id, name FROM characteristics WHERE product_id = ${product_id}`;
-//       return db.query(queryStringB)
-//         .then(() => {
-//           const charList = [];
-//           for (let i  = 0; i < result.rows.length; i++) {
-//             charList.push(result.rows[i].id);
-//             names.push(result.rows[i].name);
-//             characteristicsObj[result.rows[i].name] = {};
-//             characteristicsObj[result.rows[i].name].id = result.rows[i].id;
-//           }
-//           console.log(characteristicsObj);
-//           console.log('charList is ', charList);
-//         })
-//     })
-//     .catch((err) => {
-
-//     });
-// }
-
-const getMeta = async (callback) => {
+function getMeta (callback) {
   const product_id = 797894;
   const queryStringA = `SELECT rating, recommended FROM reviews WHERE product_id = ${product_id}`;
   const metaObj = {product_id: product_id.toString()};
-  const names = [];
-  const avgs = [];
-  const test = await db.query(queryStringA, (err, result) => {
+  db.query(queryStringA, (err, result) => {
     if (err) {
       console.log('error is ', err);
       callback(err, null);
     } else {
       metaObj.product_id = product_id;
-      console.log('meta queryA result is ', result);
       const ratingsObj = {"1": 0, "2": 0, "3": 0, "4": 0, "5": 0};
       const recommendedObj = {"0": 0, "1": 0};
       for (let i  = 0; i < result.rows.length; i++) {
@@ -165,8 +67,6 @@ const getMeta = async (callback) => {
       }
       metaObj.ratings = ratingsObj;
       metaObj.recommended = recommendedObj;
-      console.log('objects', ratingsObj, recommendedObj, metaObj);
-      const characteristicsObj = {};
       const queryStringB = `SELECT id, name FROM characteristics WHERE product_id = ${product_id}`;
       db.query(queryStringB, (err, result) => {
         if (err) {
@@ -176,13 +76,10 @@ const getMeta = async (callback) => {
           return Promise.all(result.rows.map( async (character) => {
             await db.query(`SELECT value FROM reviewcharacteristics WHERE characteristic_id = ${character.id}`)
               .then((res) => {
-                console.log('loop values', res.rows);
                 let total = 0;
                 for (let i = 0; i < res.rows.length; i++) {
                   total += res.rows[i].value;
                 }
-                console.log('total ', total);
-                console.log('character name ', character.name, character.id, total /res.rows.length);
                 metaObj.characteristics[character.name] = {
                   id: character.id,
                   value: total / res.rows.length,
@@ -190,7 +87,6 @@ const getMeta = async (callback) => {
               });
           }))
             .then(res => {
-              console.log('meta obj ', metaObj);
               callback(null, metaObj);
             })
             .catch(err => {
@@ -203,15 +99,11 @@ const getMeta = async (callback) => {
 }
 
 function postReview(data, callback) {
-  console.log('the data is ', data);
   const date = Math.floor(new Date().getTime() / 1000);
-  console.log('date is ', typeof date.toString());
   const reported = false;
   const response = null;
   const helpfulness = 0;
-  console.log(date);
   const queryStringA = `INSERT INTO reviews (product_id, rating, date, summary, body, recommended, reported, reviewer_name, reviewer_email, response, helpfulness) VALUES (${data.product_id}, ${data.rating}, ${date}, '${data.summary}', '${data.body}', ${data.recommend}, ${reported}, '${data.name}', '${data.email}', '${response}', ${helpfulness})`;
-  console.log('important query string', queryStringA);
   db.query(queryStringA, (err, result) => {
     if (err) {
       console.log('error is in reviews ', err);
