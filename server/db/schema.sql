@@ -61,4 +61,12 @@ FROM '/Users/kyle/Desktop/sdcdata/characteristic_reviews.csv'
 DELIMITER ','
 CSV HEADER;
 
+CREATE INDEX product_index ON reviews (product_id);
+CREATE INDEX photo_index ON photos (review_id);
+
+CREATE INDEX characteristic_index ON characteristics (product_id);
+CREATE INDEX reviewcharacteristic_index ON reviewcharacteristics (characteristic_id);
+
+CREATE INDEX date_index ON reviews (date);
+
 module.exports = ratings;
