@@ -6,7 +6,7 @@ function getReviews(query, callback) {
   const sort = query.sort || 'newest';
   const product_id = Number(query.product_id) || 43050;
   const queryStringA = `SELECT * FROM reviews WHERE product_id = ${product_id} AND reported = false LIMIT ${count} OFFSET ${page}`;
-  const reviewObj = {product_id: product_id, page: page, count: count};
+  const reviewObj = {product_id: product_id.toString(), page: page, count: count};
   reviewObj.results = [];
   return db.query(queryStringA, (err, result) => {
     if (err) {
@@ -19,16 +19,20 @@ function getReviews(query, callback) {
         tempObj.rating = review.rating;
         tempObj.summary = review.summary;
         tempObj.recommended = review.recommended;
+        if (review.response === 'null') {
+          review.response = null;
+        }
         tempObj.response = review.response;
         tempObj.body = review.body;
-        tempObj.date = review.date;
+        tempObj.date = new Date(Number(review.date)).toISOString();
         tempObj.reviewer_name = review.reviewer_name;
         tempObj.helpfulness = review.helpfulness;
         tempObj.photos = [];
 
-        queryStringB = `SELECT * FROM photos WHERE review_id = ${review.id}`;
+        queryStringB = `SELECT id, url FROM photos WHERE review_id = ${review.id}`;
         await db.query(queryStringB)
           .then((res) => {
+            console.log('photo stuff', res.rows);
             tempObj.photos = res.rows;
             reviewObj.results.push(tempObj);
           })
