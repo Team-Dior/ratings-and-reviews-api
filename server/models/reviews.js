@@ -6,13 +6,14 @@ function getReviews(query, callback) {
   const sort = query.sort || 'newest';
   const product_id = Number(query.product_id) || 43050;
   const queryStringA = `SELECT * FROM reviews WHERE product_id = ${product_id} AND reported = false LIMIT ${count} OFFSET ${page}`;
-  const reviewObj = {product_id: product_id};
+  const reviewObj = {product_id: product_id, page: page, count: count};
   reviewObj.results = [];
   return db.query(queryStringA, (err, result) => {
     if (err) {
       callback(err, null);
     } else {
       return Promise.all(result.rows.map(async (review) => {
+        // let tempObj = {...review};
         let tempObj = {};
         tempObj.review_id = review.id;
         tempObj.rating = review.rating;
@@ -99,43 +100,42 @@ function getMeta (query, callback) {
 }
 
 function postReview(data, callback) {
-  const date = Math.floor(new Date().getTime() / 1000);
+  const date = Date.now();
   const reported = false;
   const response = null;
   const helpfulness = 0;
-  const queryStringA = `INSERT INTO reviews (product_id, rating, date, summary, body, recommended, reported, reviewer_name, reviewer_email, response, helpfulness) VALUES (${data.product_id}, ${data.rating}, ${date}, '${data.summary}', '${data.body}', ${data.recommend}, ${reported}, '${data.name}', '${data.email}', '${response}', ${helpfulness})`;
-  db.query(queryStringA, (err, result) => {
-    if (err) {
-      console.log('error is in reviews ', err);
-      callback(err, null);
-    } else {
-      console.log('sucessful post in reviews table');
-      const queryStringB = `INSERT INTO photos (review_id, url) VALUES ((SELECT id FROM reviews WHERE date = ${date}), '${data.photos}')`;
-      db.query(queryStringB, (err, result) => {
-        if (err) {
-          console.log('error is in photos ', err);
-          callback(err, null);
-        } else {
-          console.log('sucessful post in photos table');
-          const keyList = Object.keys(data.characteristics);
-          const valueList = Object.values(data.characteristics);
-
-          keyList.forEach(name => {
-            const queryStringC = `INSERT INTO reviewcharacteristics (characteristic_id, review_id, value) VALUES ((SELECT id FROM characteristics WHERE product_id = ${data.product_id} AND name = '${name}'), (SELECT id FROM reviews WHERE date = ${date}), ${data.characteristics[name]})`;
-            db.query(queryStringC, (err, result) => {
-              if (err) {
-                console.log('error is in reviewcharacteristics ', err);
-                callback(err, null);
-              } else {
-                console.log('sucessful post in reviewcharacteristics table');
-                callback(null, result);
-              }
+  // old query string
+  // const queryStringA = `INSERT INTO reviews (product_id, rating, date, summary, body, recommended, reported, reviewer_name, reviewer_email, response, helpfulness) VALUES (${data.product_id}, ${data.rating}, ${date}, '${data.summary}', '${data.body}', ${data.recommend}, ${reported}, '${data.name}', '${data.email}', '${response}', ${helpfulness})`;
+  return db.query(`INSERT INTO reviews (product_id, rating, date, summary, body, recommended, reported, reviewer_name, reviewer_email, response, helpfulness) VALUES (${data.product_id}, ${data.rating}, ${date}, '${data.summary}', '${data.body}', ${data.recommend}, ${reported}, '${data.name}', '${data.email}', '${response}', ${helpfulness}) RETURNING id`)
+    .then(async res => {
+      return await Promise.all(data.photos.map(async (photo) => {
+        // old query string
+        // const queryStringB = `INSERT INTO photos (review_id, url) VALUES ((SELECT id FROM reviews WHERE date = ${date}), '${data.photos}')`;
+        await db.query(`INSERT INTO photos (review_id, url) VALUES (${res.rows[0].id}, '${photo}') RETURNING review_id`)
+          .then(async res => {
+            console.log('sucessful post in photos table');
+            const keyList = Object.keys(data.characteristics);
+            return await Promise.all(keyList.map(async (name) => {
+              console.log('what i want ', data.characteristics[name]);
+              // old query string
+              // const queryStringC = `INSERT INTO reviewcharacteristics (characteristic_id, review_id, value) VALUES ((SELECT id FROM characteristics WHERE product_id = ${data.product_id} AND name = '${name}'), (SELECT id FROM reviews WHERE date = ${date}), ${data.characteristics[name]})`;
+              await db.query(`INSERT INTO reviewcharacteristics (characteristic_id, review_id, value) VALUES ((SELECT id FROM characteristics WHERE product_id = ${data.product_id} AND name = '${name}'), ${res.rows[0].review_id}, ${data.characteristics[name]})`)
+                .then(res => {
+                  console.log('successful post in reviewcharacteristics');
+                });
+            }))
+            .then(res => {
+              console.log('successful post in reviewcharacteristics');
             })
-          })
-        }
-      })
-    }
-  });
+        });
+    }))
+    .then(res => {
+      // should this even be here
+    })
+  })
+  .then(res => {
+    callback(null, res)
+  })
 }
 
 function putHelpful(data, callback) {
