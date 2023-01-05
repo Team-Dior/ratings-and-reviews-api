@@ -1,8 +1,11 @@
-DROP DATABASE IF EXISTS ratings;
+-- DROP DATABASE IF EXISTS ratings;
+DROP DATABASE IF EXISTS test;
 
-CREATE DATABASE ratings;
+-- CREATE DATABASE ratings;
+CREATE DATABASE test;
 
-USE ratings;
+-- USE ratings;
+USE test;
 
 CREATE TABLE reviews (
   id SERIAL PRIMARY KEY,
@@ -29,7 +32,7 @@ CREATE TABLE photos (
   review_id INT,
   url VARCHAR(500),
   FOREIGN KEY (review_id) REFERENCES reviews(id)
-)
+);
 
 COPY photos
 FROM '/Users/kyle/Desktop/sdcdata/reviews_photos.csv'
@@ -40,7 +43,7 @@ CREATE TABLE characteristics (
   id SERIAL PRIMARY KEY,
   product_id INT,
   name VARCHAR(50)
-)
+);
 
 COPY characteristics
 FROM '/Users/kyle/Desktop/sdcdata/characteristics.csv'
@@ -54,11 +57,17 @@ CREATE TABLE reviewcharacteristics (
   value INT,
   FOREIGN KEY (characteristic_id) REFERENCES characteristics(id),
   FOREIGN KEY (review_id) REFERENCES reviews(id)
-)
+);
 
 COPY reviewcharacteristics
 FROM '/Users/kyle/Desktop/sdcdata/characteristic_reviews.csv'
 DELIMITER ','
 CSV HEADER;
 
-module.exports = ratings;
+-- CREATE INDEX product_index ON reviews (product_id);
+-- CREATE INDEX photo_index ON photos (review_id);
+
+-- CREATE INDEX characteristic_index ON characteristics (product_id);
+-- CREATE INDEX reviewcharacteristic_index ON reviewcharacteristics (characteristic_id);
+
+-- CREATE INDEX date_index ON reviews (date);
