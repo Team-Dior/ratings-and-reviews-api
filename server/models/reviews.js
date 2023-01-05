@@ -32,7 +32,6 @@ function getReviews(query, callback) {
         queryStringB = `SELECT id, url FROM photos WHERE review_id = ${review.id}`;
         await db.query(queryStringB)
           .then((res) => {
-            console.log('photo stuff', res.rows);
             tempObj.photos = res.rows;
             reviewObj.results.push(tempObj);
           })
@@ -120,7 +119,6 @@ function postReview(data, callback) {
             console.log('sucessful post in photos table');
             const keyList = Object.keys(data.characteristics);
             return await Promise.all(keyList.map(async (name) => {
-              console.log('what i want ', data.characteristics[name]);
               // old query string
               // const queryStringC = `INSERT INTO reviewcharacteristics (characteristic_id, review_id, value) VALUES ((SELECT id FROM characteristics WHERE product_id = ${data.product_id} AND name = '${name}'), (SELECT id FROM reviews WHERE date = ${date}), ${data.characteristics[name]})`;
               await db.query(`INSERT INTO reviewcharacteristics (characteristic_id, review_id, value) VALUES ((SELECT id FROM characteristics WHERE product_id = ${data.product_id} AND name = '${name}'), ${res.rows[0].review_id}, ${data.characteristics[name]})`)
