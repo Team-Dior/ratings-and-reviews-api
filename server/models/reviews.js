@@ -53,15 +53,15 @@ function getReviews(query, callback) {
 function getMeta (query, callback) {
   const product_id = Number(query.product_id) || 797894;
   const queryStringA = `SELECT rating, recommended FROM reviews WHERE product_id = ${product_id}`;
-  const metaObj = {product_id: product_id.toString()};
+  const metaObj = {}
   db.query(queryStringA, (err, result) => {
     if (err) {
       console.log('error is ', err);
       callback(err, null);
     } else {
-      metaObj.product_id = product_id;
-      const ratingsObj = {"1": 0, "2": 0, "3": 0, "4": 0, "5": 0};
-      const recommendedObj = {"0": 0, "1": 0};
+      metaObj.product_id = product_id.toString();
+      const ratingsObj = {1: 0, 2: 0, 3: 0, 4: 0, 5: 0};
+      const recommendedObj = {0: 0, 1: 0};
       for (let i  = 0; i < result.rows.length; i++) {
         ratingsObj[result.rows[i].rating] += 1;
         if (result.rows[i].recommended === false) {
@@ -87,7 +87,7 @@ function getMeta (query, callback) {
                 }
                 metaObj.characteristics[character.name] = {
                   id: character.id,
-                  value: total / res.rows.length,
+                  value: (total / res.rows.length).toString(),
                 };
               });
           }))
