@@ -1,11 +1,11 @@
--- DROP DATABASE IF EXISTS ratings;
-DROP DATABASE IF EXISTS test;
+DROP DATABASE IF EXISTS ratings;
+-- DROP DATABASE IF EXISTS test;
 
--- CREATE DATABASE ratings;
-CREATE DATABASE test;
+CREATE DATABASE ratings;
+-- CREATE DATABASE test;
 
--- USE ratings;
-USE test;
+USE ratings;
+-- USE test;
 
 CREATE TABLE reviews (
   id SERIAL PRIMARY KEY,
@@ -64,10 +64,10 @@ FROM '/Users/kyle/Desktop/sdcdata/characteristic_reviews.csv'
 DELIMITER ','
 CSV HEADER;
 
--- CREATE INDEX product_index ON reviews (product_id);
--- CREATE INDEX photo_index ON photos (review_id);
+CREATE INDEX product_index ON reviews (product_id);
+CREATE INDEX photo_index ON photos (review_id);
 
--- CREATE INDEX characteristic_index ON characteristics (product_id);
--- CREATE INDEX reviewcharacteristic_index ON reviewcharacteristics (characteristic_id);
+CREATE INDEX characteristic_index ON characteristics (product_id);
+CREATE INDEX reviewcharacteristic_index ON reviewcharacteristics (characteristic_id);
 
--- CREATE INDEX date_index ON reviews (date);
+CREATE INDEX date_index ON reviews (date);
