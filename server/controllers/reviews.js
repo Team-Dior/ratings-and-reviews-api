@@ -26,7 +26,7 @@ function postReview(req, res) {
   const testData = {product_id:5, rating:2, summary:"big summary", body:"body text", recommend:true, name:"kyle", email:"kyl@email.com", photos:["urlplaceholder/review_5_photo_number_1.jpg", "urlplaceholder/review_5_photo_number_2.jpg"], characteristics:{"14": 5, "15":5, "15":3} };
   models.postReview(testData, (err, result) => {
     if (err) {
-      console.log('error');
+      console.log('error', err);
       res.status(404).send();
     } else {
       res.status(201).send();

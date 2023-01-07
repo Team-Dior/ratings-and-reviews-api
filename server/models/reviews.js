@@ -118,7 +118,7 @@ function postReview(data, callback) {
         // await db.query(queryStringB)
         await db.query(`INSERT INTO photos (review_id, url) VALUES (${res.rows[0].id}, '${photo}') RETURNING review_id`)
           .then(async res => {
-            console.log('sucessful post in photos table');
+            // console.log('sucessful post in photos table');
             const keyList = Object.keys(data.characteristics);
             return await Promise.all(keyList.map(async (name) => {
               // old query string
@@ -126,11 +126,11 @@ function postReview(data, callback) {
               // await db.query(queryStringC)
               await db.query(`INSERT INTO reviewcharacteristics (characteristic_id, review_id, value) VALUES ((SELECT id FROM characteristics WHERE product_id = ${data.product_id} AND name = '${name}'), ${res.rows[0].review_id}, ${data.characteristics[name]})`)
                 .then(res => {
-                  console.log('successful post in reviewcharacteristics');
+                  // console.log('successful post in reviewcharacteristics');
                 });
             }))
             .then(res => {
-              console.log('successful post in reviewcharacteristics');
+              // console.log('successful post in reviewcharacteristics');
             })
         });
     }))
