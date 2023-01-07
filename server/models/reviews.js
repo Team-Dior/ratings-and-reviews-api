@@ -109,11 +109,13 @@ function postReview(data, callback) {
   const helpfulness = 0;
   // old query string
   // const queryStringA = `INSERT INTO reviews (product_id, rating, date, summary, body, recommended, reported, reviewer_name, reviewer_email, response, helpfulness) VALUES (${data.product_id}, ${data.rating}, ${date}, '${data.summary}', '${data.body}', ${data.recommend}, ${reported}, '${data.name}', '${data.email}', '${response}', ${helpfulness})`;
+  // return db.query(queryStringA)
   return db.query(`INSERT INTO reviews (product_id, rating, date, summary, body, recommended, reported, reviewer_name, reviewer_email, response, helpfulness) VALUES (${data.product_id}, ${data.rating}, ${date}, '${data.summary}', '${data.body}', ${data.recommend}, ${reported}, '${data.name}', '${data.email}', '${response}', ${helpfulness}) RETURNING id`)
     .then(async res => {
       return await Promise.all(data.photos.map(async (photo) => {
         // old query string
         // const queryStringB = `INSERT INTO photos (review_id, url) VALUES ((SELECT id FROM reviews WHERE date = ${date}), '${data.photos}')`;
+        // await db.query(queryStringB)
         await db.query(`INSERT INTO photos (review_id, url) VALUES (${res.rows[0].id}, '${photo}') RETURNING review_id`)
           .then(async res => {
             console.log('sucessful post in photos table');
@@ -121,6 +123,7 @@ function postReview(data, callback) {
             return await Promise.all(keyList.map(async (name) => {
               // old query string
               // const queryStringC = `INSERT INTO reviewcharacteristics (characteristic_id, review_id, value) VALUES ((SELECT id FROM characteristics WHERE product_id = ${data.product_id} AND name = '${name}'), (SELECT id FROM reviews WHERE date = ${date}), ${data.characteristics[name]})`;
+              // await db.query(queryStringC)
               await db.query(`INSERT INTO reviewcharacteristics (characteristic_id, review_id, value) VALUES ((SELECT id FROM characteristics WHERE product_id = ${data.product_id} AND name = '${name}'), ${res.rows[0].review_id}, ${data.characteristics[name]})`)
                 .then(res => {
                   console.log('successful post in reviewcharacteristics');
